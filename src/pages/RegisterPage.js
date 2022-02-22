@@ -4,18 +4,13 @@ import { Box, FormGroup, Button, CircularProgress, Typography, Alert } from '@mu
 import { AuthContext } from '../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { useFormik } from 'formik'
-import * as yup from 'yup';
+import useYup from '../hooks/useYup';
 
 const RegisterPage = () => {
     const { signUp } = useContext(AuthContext);
     const [error, setError] = useState(false);
+    const { registerSchema } = useYup();
     const navigate = useNavigate();
-
-    let schema = yup.object().shape({
-        email: yup.string().email().required(),
-        password: yup.string().required().min(6).max(20),
-        repeatPassword: yup.string().required().min(6).max(20)
-    });
 
     const formik = useFormik({
         initialValues: {
@@ -23,7 +18,7 @@ const RegisterPage = () => {
             password: '',
             repeatPassword: '',
         },
-        validationSchema: schema,
+        validationSchema: registerSchema,
         onSubmit: async (values) => {
             if(values.password !== values.repeatPassword){
                 setError(true);

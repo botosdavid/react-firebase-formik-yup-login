@@ -4,24 +4,20 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useFormik } from 'formik';
 import Input from '../components/Input';
 import { Box, FormGroup, Button, Typography, Alert, CircularProgress } from '@mui/material';
-import * as yup from 'yup';
+import useYup from '../hooks/useYup';
 
 const LoginPage = () => {
     const { signIn } = useContext(AuthContext);
     const [error, setError] = useState(false);
+    const { loginSchema } = useYup();
     const navigate = useNavigate();
-
-    let schema = yup.object().shape({
-        email: yup.string().email().required(),
-        password: yup.string().required().min(6).max(20)
-    });
 
     const formik = useFormik({
         initialValues: {
             email: '',
             password: '',
         },
-        validationSchema: schema,
+        validationSchema: loginSchema,
         onSubmit: async (values) => {
             const isSuccess = await signIn(values.email, values.password);
             if(isSuccess) return navigate('/');
@@ -33,6 +29,7 @@ const LoginPage = () => {
         <Box sx={{width: '100vw', height: '100vh', backgroundColor: '#e8eaf6', pt: '5rem'}} lg={{backgroundColor: 'black'}}>
             <Box spacing={2} sx={{width: 1/4, mx: 'auto', backgroundColor: 'white', p: '5rem'}}>
                 <Typography  variant="h3" component="h1" sx={{mb: '2rem'}}>Sign In</Typography>
+                {/* <h1>{user ? JSON.stringify(user.email) : ''}</h1> */}
                 <form onSubmit={formik.handleSubmit}>
                     <FormGroup>
                         <Input 
