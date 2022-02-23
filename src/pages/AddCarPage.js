@@ -39,7 +39,7 @@ const AddCarPage = () => {
     return (
         <Box style={{minHeight: '100vh'}} sx={{width: '100vw', backgroundColor: '#e8eaf6', pt: '5rem', pb: '5rem'}}>
             <Box spacing={2} sx={{width: 1/4, mx: 'auto', backgroundColor: 'white', p: '5rem'}}>
-                <Typography variant='h4'>Add a new Car</Typography>
+                <Typography variant='h4' style={{marginBottom: '2rem'}}>Add a new Car</Typography>
                 <form onSubmit={formik.handleSubmit}>
                     <FormGroup>    
                         <div style={{ display: 'inline-flex' }}>
