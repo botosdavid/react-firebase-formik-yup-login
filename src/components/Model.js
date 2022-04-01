@@ -6,8 +6,8 @@ import Loading from './Loading';
 
 const Scene = () => {
     const mesh = useRef();
-    const materials = useLoader(MTLLoader, "/uploads-files-2763799-Tesla+Model+obj/Tesla Model.mtl");
-    const obj = useLoader(OBJLoader, "/uploads-files-2763799-Tesla+Model+obj/Tesla Model.obj", (loader) => {
+    const materials = useLoader(MTLLoader, "/uploads-files-2763799-Tesla+Model+obj/Tesla_Model.mtl");
+    const obj = useLoader(OBJLoader, "/uploads-files-2763799-Tesla+Model+obj/Tesla_Model.obj", (loader) => {
       materials.preload();
       loader.setMaterials(materials);
     });
