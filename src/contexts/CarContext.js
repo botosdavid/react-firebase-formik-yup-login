@@ -1,9 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { collection, addDoc, getDocs, onSnapshot } from "firebase/firestore"; 
+import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc,arrayUnion,arrayRemove } from "firebase/firestore"; 
 import { db, storage } from '../authentication/firebase';
 import { AuthContext } from './AuthContext';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { v4 as uuidv4 } from 'uuid';
 
 export const CarContext = createContext();
 
@@ -11,6 +10,21 @@ export const CarProvider = ({children}) => {
     const { user } = useContext(AuthContext);
     const [cars, setCars] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+
+    const toggleCarWishList = async (id, isWish) => {
+        const carRef = doc(db, "cars", id);
+        const method = isWish ? arrayRemove : arrayUnion;
+        await updateDoc(carRef, {
+            wishLists: method(user.email)
+        });
+    }
+
+    const giveRating = async (id, rating) => {
+        const carRef = doc(db, "cars", id);
+        await updateDoc(carRef, {
+            ratings: arrayUnion( Number(rating))
+        })
+    }
 
     useEffect(() => {
         const unsub = onSnapshot(collection(db, 'cars'), (doc) => {
@@ -28,7 +42,10 @@ export const CarProvider = ({children}) => {
         const data = await getDocs(collection(db, 'cars'));
         const result = [];
         data.forEach((doc) => {
-            result.push(doc.data());
+            result.push({ 
+                id: doc.id, 
+                ...doc.data()
+            });
         });
         setCars(result);
         setIsLoading(false);
@@ -68,7 +85,8 @@ export const CarProvider = ({children}) => {
                     ...values,
                     picture: downloadURL,
                     owner: userEmail,
-                    id: uuidv4()
+                    wishLists: [],
+                    ratings: [],
                 });
             });
             }
@@ -77,7 +95,7 @@ export const CarProvider = ({children}) => {
     }    
 
     return (
-        <CarContext.Provider value={{addCar, getCars, cars, isLoading, getCar}}>
+        <CarContext.Provider value={{addCar, getCars, cars, isLoading, getCar, toggleCarWishList, giveRating}}>
             {children}
         </CarContext.Provider>
     )
