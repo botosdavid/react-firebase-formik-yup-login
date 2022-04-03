@@ -8,7 +8,7 @@ import CarProperty from '../components/CarProperty';
 
 const CarPage = () => {
     const { id } = useParams();
-    const { getCar, cars, toggleCarWishList, giveRating }  = useContext(CarContext);
+    const { getCar, cars, toggleCarWishList, addRating, getCarRating }  = useContext(CarContext);
     const { user } = useContext(AuthContext);
     const [car, setCar] = useState({});
     const [isWish, setIsWish] = useState(false);
@@ -19,14 +19,12 @@ const CarPage = () => {
         setCar(newCar);
     },[cars])
 
-    useEffect( () => {
+    useEffect( async () => {
         setIsWish(car?.wishLists?.includes(user.email));
-        if(!car?.ratings) return;
-        const ratingCount = car?.ratings?.length;
-        const ratingSum = car?.ratings?.reduce((sum, rating)=> {
-            return sum + rating;
-        },0)
-        setRating(ratingSum / ratingCount);
+        if(!car?.id) return;
+        const rating = await getCarRating(car.id);
+        setRating(rating);
+        // todo: refresh when rated 
     }, [car,user])
 
     if(!car) return <Loading />
@@ -40,7 +38,8 @@ const CarPage = () => {
                     name="simple-controlled"
                     value={rating}
                     onChange={(event, newValue) => {
-                        giveRating(car.id, newValue);
+                        // giveRating(car.id, newValue); 
+                        addRating(car.id, newValue, user.email);
                     }}
                     />
                     <h1>{rating}</h1>

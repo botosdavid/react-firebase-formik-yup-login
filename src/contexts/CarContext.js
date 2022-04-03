@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc,arrayUnion,arrayRemove } from "firebase/firestore"; 
+import { collection, addDoc, getDocs, onSnapshot, doc, updateDoc,arrayUnion,arrayRemove, where, query } from "firebase/firestore"; 
 import { db, storage } from '../authentication/firebase';
 import { AuthContext } from './AuthContext';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -92,10 +92,73 @@ export const CarProvider = ({children}) => {
             }
         );  
         }catch (e){console.log('error: '+ e)}
-    }    
+    }   
+
+    const getRatingWithEmailAndCarId = async (carId, email) => {
+        let result = [];
+        const ratingsRef = collection(db, "ratings");
+        const q = query(ratingsRef, 
+            where("carId", "==", carId), 
+            where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+            result.push({id: doc.id, ...doc.data()});
+        });
+        return result;
+    }
+    
+    const addRating = async (carId, rating, email) => {
+        const searchedRatings = await getRatingWithEmailAndCarId(carId, email);
+        if ( searchedRatings.length > 0 ) {
+            // update
+            const id = searchedRatings[0].id
+            const ratingRef = doc(db, "ratings", id);
+            await updateDoc(ratingRef, {
+                rating: rating
+            });
+        } else {
+            // add
+            await addDoc(collection(db, "ratings"), {
+                rating, email, carId
+            });
+        }
+    }
+
+    const getRatingsOfCar = async (carId) => {
+        const ratingsRef = collection(db, "ratings");
+        const result = [];
+        const q = query(ratingsRef, where("carId", "==", carId));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+            result.push({...doc.data()});
+        });
+        return result;
+    }
+
+    const getCarRating = async (carId) => {
+        const carRatings = await getRatingsOfCar(carId);
+        const numberOfRatings = carRatings.length;
+        const ratingSum = carRatings.reduce((sum, rating)=> {
+            return sum + rating.rating;
+        },0)
+        if (numberOfRatings == 0) return 0;
+        return ratingSum / numberOfRatings;
+    }
 
     return (
-        <CarContext.Provider value={{addCar, getCars, cars, isLoading, getCar, toggleCarWishList, giveRating}}>
+        <CarContext.Provider 
+            value={{
+                cars, 
+                addCar, 
+                getCars, 
+                getCar, 
+                isLoading,
+                giveRating, 
+                addRating, 
+                getCarRating,
+                getRatingsOfCar, 
+                toggleCarWishList, 
+            }}>
             {children}
         </CarContext.Provider>
     )
